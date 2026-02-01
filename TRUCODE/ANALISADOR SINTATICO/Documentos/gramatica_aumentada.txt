@@ -1,0 +1,57 @@
+0) S' -> lista_comandos
+1) lista_comandos -> comando lista_comandos
+2) lista_comandos -> comando
+3) comando -> declaracao
+4) comando -> atribuicao
+5) comando -> entrada
+6) comando -> saida
+7) comando -> condicional
+8) comando -> laco_repeticao
+9) comando -> break
+10) declaracao -> ID "[" tipo "]" "#"
+11) atribuicao -> ID "[" tipo "]" "VALE" valor "#"
+12) entrada -> "RECEBE" "[" ID "]" "#"
+13) saida -> "MOSTRA" "[" lista_valores "]" "#"
+14) lista_valores -> valor_saida
+15) lista_valores -> valor_saida "," lista_valores
+16) valor_saida -> STRING
+17) valor_saida -> ID
+18) condicional -> "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else
+19) opcional_else -> "CORRE" "{" lista_comandos "}"
+20) opcional_else -> ε
+21) laco_repeticao -> laco_while
+22) laco_repeticao -> laco_for
+23) laco_while -> "SEGUE" "(" expr ")" "{" lista_comandos "}"
+24) laco_for -> "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"
+25) valor_for -> NUM_INT
+26) valor_for -> NUM_REAL
+27) valor_for -> ID
+28) break -> "CORTA" "#"
+29) valor -> NUM_INT
+30) valor -> NUM_REAL
+31) valor -> STRING
+32) valor -> BOOLEAN
+33) valor -> ID
+34) tipo -> "OURO"
+35) tipo -> "ESPADA"
+36) tipo -> "COPA"
+37) tipo -> "PAUS"
+38) expr -> term expr_tail
+39) expr_tail -> binop term expr_tail
+40) expr_tail -> ε
+41) binop -> "??"
+42) binop -> "##"
+43) binop -> "RECUA"
+44) binop -> "MATA"
+45) binop -> "BATE"
+46) binop -> "SEGURA"
+47) binop -> "CANTA"
+48) binop -> "BLEFA"
+49) binop -> "KING"
+50) binop -> "JACK"
+51) binop -> "AS"
+52) binop -> "QUEEN"
+53) binop -> "RESTO"
+54) term -> "XX" term
+55) term -> "(" expr ")"
+56) term -> valor

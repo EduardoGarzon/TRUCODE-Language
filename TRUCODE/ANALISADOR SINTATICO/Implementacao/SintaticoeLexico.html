@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador Léxico e Sintático - TRUCODE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .console {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .warning {
+            color: #856404;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        .tokens {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .token-item {
+            font-family: monospace;
+            margin: 2px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🃏 Analisador Léxico e Sintático - TRUCODE</h1>
+
+        <textarea id="console" class="console" placeholder="Digite seu código TRUCODE aqui...">
+@@ Exemplo de código TRUCODE
+nome(COPA) VALE "João"#
+idade(OURO) VALE 25#
+salario(ESPADA) VALE 2500.50#
+ativo(PAUS) VALE REAL#
+
+MOSTRA["Nome: ", nome]#
+MOSTRA["Idade: ", idade]#
+MOSTRA["Salário: ", salario]#
+
+TRUCO(idade MATA 18) {
+    MOSTRA["Maior de idade"]#
+}
+CORRE {
+    MOSTRA["Menor de idade"]#
+}
+
+@@ Laço for exemplo
+DISTRIBUI i DE 1 ATE 5 PASSO 1 {
+    MOSTRA["Contagem: ", i]#
+}</textarea>
+
+        <div>
+            <input type="file" id="input-carregar-codigo-fonte" accept=".txt,.trucode" style="margin: 10px 0;">
+            <br>
+            <button id="button-analisador-lexico">🔍 Análise Léxica</button>
+            <button id="button-analisador-sintatico">⚙️ Análise Sintática</button>
+            <button id="button-analise-completa">🚀 Análise Completa</button>
+            <button id="button-limpar">🗑️ Limpar</button>
+        </div>
+
+        <div id="resultados" class="results"></div>
+    </div>
+
+    <script>
+        // =============================================
+        // ANALISADOR LÉXICO - TRUCODE
+        // =============================================
+
+        let codigo_fonte = "";
+
+        // BOTÃO PARA CARREGAR ARQUIVO
+        document.getElementById("input-carregar-codigo-fonte").addEventListener('change', (e) => {
+            const arquivo = e.target.files[0];
+            if (!arquivo) return;
+
+            const leitor = new FileReader();
+            leitor.onload = function () {
+                const conteudo = leitor.result;
+                document.getElementById("console").value = conteudo;
+                codigo_fonte = conteudo;
+                mostrarResultado("📁 Arquivo carregado com sucesso!", "success");
+            };
+            leitor.readAsText(arquivo);
+        });
+
+        // BOTÃO LIMPAR
+        document.getElementById("button-limpar").addEventListener('click', () => {
+            document.getElementById("resultados").innerHTML = "";
+            mostrarResultado("🧹 Resultados limpos!", "success");
+        });
+
+        // TABELA DE SÍMBOLOS - PALAVRAS RESERVADAS TRUCODE
+        // TABELA DE SÍMBOLOS - PALAVRAS RESERVADAS TRUCODE
+        function getTabelaSimbolos() {
+            return [
+                // Comandos de E/S
+                { type: "RECEBE" },
+                { type: "MOSTRA" },
+
+                // Tipos de dados
+                { type: "OURO" },
+                { type: "ESPADA" },
+                { type: "COPA" },
+                { type: "PAUS" },
+
+                // Operadores relacionais
+                { type: "RECUA" },
+                { type: "MATA" },
+                { type: "BATE" },
+                { type: "SEGURA" },
+                { type: "CANTA" },
+                { type: "BLEFA" },
+
+                // Operadores aritméticos
+                { type: "KING" },
+                { type: "JACK" },
+                { type: "QUEEN" },
+                { type: "AS" },
+                { type: "RESTO" },
+
+                // Estruturas de controle
+                { type: "TRUCO" },
+                { type: "CORRE" },
+                { type: "SEGUE" },
+                { type: "DISTRIBUI" },
+                { type: "DE" },
+                { type: "ATE" },
+                { type: "VALE" },
+                { type: "CORTA" },
+                { type: "PASSO" },
+                // ==================
+
+                // Constantes booleanas
+                { type: "REAL" },
+                { type: "FAKE" },
+
+                // Operadores lógicos simbólicos
+                { type: "##" },
+                { type: "??" },
+                { type: "XX" },
+
+                // Delimitadores
+                { type: "(" },
+                { type: ")" },
+                { type: "[" },
+                { type: "]" },
+                { type: "{" },
+                { type: "}" },
+                { type: "#" },
+                { type: "," }
+            ];
+        }
+        // ANALISADOR LÉXICO
+        function executarAnalisadorLexicoAFD(codigo_fonte, tabela_simbolos) {
+            let index = 0;
+            let estado = 1;
+            let caractere = '';
+            let lexema = "";
+            let flag_erro = false;
+            let tokens = [];
+            let linha = 1;
+            let coluna = 1;
+
+            function proximoCaractere() {
+                if (index < codigo_fonte.length) {
+                    caractere = codigo_fonte[index++];
+                    coluna++;
+                    if (caractere === '\n') {
+                        linha++;
+                        coluna = 1;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            function retroceder() {
+                index--;
+                coluna--;
+                if (caractere === '\n') {
+                    linha--;
+                    // Não podemos calcular coluna anterior facilmente, então resetamos
+                    coluna = 1;
+                }
+            }
+
+
+            let hasChars = proximoCaractere();
+
+            while (hasChars && !flag_erro) {
+                switch (estado) {
+                    case 1:
+                        if (isLetter(caractere)) {
+                            estado = 2;
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isDigit(caractere)) {
+                            estado = 4;
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isAspas(caractere)) {
+                            estado = 8;
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isWhiteSpace(caractere)) {
+                            lexema = "";
+                            hasChars = proximoCaractere();
+                        } else if (isComentChar(caractere)) {
+                            estado = 11;
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isCharOR(caractere)) {
+                            estado = 16;
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                            mrow;
+                        } else if (isDelimitadorFimDeLinha(caractere)) {
+                            estado = 18;
+                            lexema = caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isDelimitador(caractere)) {
+                            estado = 22;
+                            lexema = caractere;
+                            hasChars = proximoCaractere();
+                        } else {
+                            estado = "ERRO";
+                        }
+                        break;
+
+                    case 2:
+                        if (isAlphaNum(caractere)) {
+                            // Apenas continue consumindo
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else {
+                            // Agora que o token terminou (encontrou '(', '#', ' ', etc.),
+                            // verifique o tamanho e faça o truncamento.
+                            if (lexema.length > 12) {
+                                mostrarResultado(`⚠️ Aviso: Identificador '${lexema}' (linha ${linha}) excede 12 caracteres. Truncado para '${lexema.substring(0, 12)}'.`, "warning");
+                                lexema = lexema.substring(0, 12);
+                            }
+
+                            estado = 1;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            lexema = "";
+                            // Não chame proximoCaractere() aqui, pois o caractere atual
+                            // (que não é AlphaNum) deve ser re-processado no estado 1.
+                        }
+                        break;
+
+                    case 4:
+                        if (isDigit(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isPoint(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                            estado = 5;
+                        } else {
+                            estado = 1;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            lexema = "";
+                        }
+                        break;
+
+                    case 5:
+                        if (isDigit(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                            estado = 6;
+                        } else {
+                            estado = "ERRO";
+                        }
+                        break;
+
+                    case 6:
+                        if (isDigit(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else {
+                            estado = 1;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            lexema = "";
+                        }
+                        break;
+
+                    case 8:
+                        if (isValidChar(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (isAspas(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                            estado = 1;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            lexema = "";
+                        } else if (caractere === '\n') {
+                            estado = "ERRO";
+                        } else {
+                            estado = "ERRO";
+                        }
+                        break;
+
+                    case 11:
+                        if (isComentChar(caractere)) {
+                            lexema += caractere;
+                            estado = 12;
+                            hasChars = proximoCaractere();
+                        } else {
+                            estado = "ERRO";
+                        }
+                        break;
+
+                    case 12:
+                        if (isComentString(caractere)) {
+                            lexema += caractere;
+                            hasChars = proximoCaractere();
+                        } else if (caractere === '\n') {
+                            estado = 1;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            lexema = "";
+                            hasChars = proximoCaractere();
+                        } else {
+                            estado = "ERRO";
+                        }
+                        break;
+
+                    case 16:
+                        if (isCharOR(caractere)) {
+                            lexema += caractere;
+                            estado = 1;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            lexema = "";
+                            hasChars = proximoCaractere();
+                        } else {
+                            estado = "ERRO";
+                        }
+                        break;
+
+                    case 18:
+                        if (isDelimitadorFimDeLinha(caractere)) {
+                            lexema += caractere;
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            estado = 1;
+                            lexema = "";
+                            hasChars = proximoCaractere();
+                        } else {
+                            tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                            estado = 1;
+
+                        }
+                        break;
+
+                    case 22:
+                        tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna: coluna - lexema.length });
+                        estado = 1;
+                        lexema = "";
+                        break;
+
+                    case "ERRO":
+                        mostrarResultado(`❌ Erro léxico: Caractere '${caractere}' inesperado (linha ${linha}, coluna ${coluna})`, "error");
+                        lexema = "";
+                        flag_erro = true;
+                        break;
+                }
+            }
+
+
+
+            // Processar último lexema
+            if (lexema.length > 0 && !flag_erro) {
+                if (lexema[0] === '"') {
+                    if (lexema.length > 1 && lexema[lexema.length - 1] === '"') {
+                        tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna });
+                    } else {
+                        mostrarResultado(`❌ Erro léxico: String não fechada '${lexema}'`, "error");
+                    }
+                } else if (lexema.startsWith('@@')) {
+                    tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna });
+                } else {
+                    tokens.push({ ...obterToken(lexema, tabela_simbolos), linha, coluna });
+                }
+            }
+
+            console.log("📋 Tokens gerados:", tokens);
+            return tokens;
+        }
+
+        // FUNÇÃO PARA OBTER TOKENS
+        function obterToken(lexema, tabela_simbolos) {
+            // Verifica constantes booleanas primeiro
+            if (lexema === "REAL" || lexema === "FAKE") {
+                return { token: "BOOLEAN", lexema };
+            }
+
+            // Verifica números
+            if (isNumInt(lexema)) {
+                return { token: "NUM_INT", lexema };
+            }
+
+            if (isNumReal(lexema)) {
+                return { token: "NUM_REAL", lexema };
+            }
+
+            // Verifica string
+            if (isString(lexema)) {
+                return { token: "STRING", lexema };
+            }
+
+            // Verifica comentário
+            if (isComentario(lexema)) {
+                return { token: "COMENTARIO", lexema };
+            }
+
+            // Busca na tabela de símbolos
+            let token = tabela_simbolos.find(t => t.type === lexema);
+            if (token) {
+                return { token: token.type, lexema };
+            } else {
+                return { token: "ID", lexema };
+            }
+        }
+
+        // FUNÇÕES AUXILIARES
+        function isLetter(c) { return /^[a-zA-Z]$/.test(c); }
+        function isAlphaNum(c) { return /^[a-zA-Z0-9_]$/.test(c); }
+        function isDigit(c) { return /^[0-9]$/.test(c); }
+        function isNumInt(lexema) { return /^[0-9]+$/.test(lexema); }
+        function isNumReal(lexema) { return /^[0-9]+\.[0-9]+$/.test(lexema); }
+        function isPoint(c) { return c === '.'; }
+        function isAspas(c) { return c === '"'; }
+        function isValidChar(c) { return c !== '"' && c !== '\n'; }
+        function isString(lexema) { return /^"[^"]*"$/.test(lexema); }
+        function isWhiteSpace(c) { return /^[\t\n\r ]$/.test(c); }
+        function isComentChar(c) { return c === '@'; }
+        function isComentString(c) { return c !== '\n'; }
+        function isComentario(lexema) { return lexema.startsWith('@@'); }
+        function isCharOR(c) { return c === '?'; }
+        function isDelimitadorFimDeLinha(c) { return c === '#'; }
+        function isDelimitador(c) { return /^[()\[\]{},]$/.test(c); }
+
+        // =============================================
+        // ANALISADOR SINTÁTICO SLR - TRUCODE
+        // =============================================
+
+        const productions = [
+            // 0-2: Produções iniciais
+            ["S'", ["lista_comandos"]],
+            ["lista_comandos", ["comando", "lista_comandos"]],
+            ["lista_comandos", ["comando"]],
+
+            // 3-9: Comandos
+            ["comando", ["declaracao"]],
+            ["comando", ["atribuicao"]],
+            ["comando", ["entrada"]],
+            ["comando", ["saida"]],
+            ["comando", ["condicional"]],
+            ["comando", ["laco_repeticao"]],
+            ["comando", ["break"]],
+
+            // 10-13: Declarações e atribuições COM PARÊNTESES (corrigido)
+            ["declaracao", ["ID", "(", "tipo", ")", "#"]],
+            ["atribuicao", ["ID", "(", "tipo", ")", "VALE", "valor", "#"]],
+            ["entrada", ["RECEBE", "[", "ID", "]", "#"]],
+            ["saida", ["MOSTRA", "[", "lista_valores", "]", "#"]],
+
+            // 14-17: Listas de valores
+            ["lista_valores", ["valor_saida"]],
+            ["lista_valores", ["valor_saida", ",", "lista_valores"]],
+            ["valor_saida", ["STRING"]],
+            ["valor_saida", ["ID"]],
+
+            // 18-20: Condicionais
+            ["condicional", ["TRUCO", "(", "expr", ")", "{", "lista_comandos", "}", "opcional_else"]],
+            ["opcional_else", ["CORRE", "{", "lista_comandos", "}"]],
+            ["opcional_else", []],
+
+            // 21-24: Laços de repetição
+            ["laco_repeticao", ["laco_while"]],
+            ["laco_repeticao", ["laco_for"]],
+            ["laco_while", ["SEGUE", "(", "expr", ")", "{", "lista_comandos", "}"]],
+            ["laco_for", ["DISTRIBUI", "ID", "DE", "valor_for", "ATE", "expr", "PASSO", "valor_for", "{", "lista_comandos", "}"]],
+
+            // 25-27: Valores for
+            ["valor_for", ["NUM_INT"]],
+            ["valor_for", ["NUM_REAL"]],
+            ["valor_for", ["ID"]],
+
+            // 28: Break
+            ["break", ["CORTA", "#"]],
+
+            // 29-33: Valores
+            ["valor", ["NUM_INT"]],
+            ["valor", ["NUM_REAL"]],
+            ["valor", ["STRING"]],
+            ["valor", ["BOOLEAN"]],
+            ["valor", ["ID"]],
+
+            // 34-37: Tipos
+            ["tipo", ["OURO"]],
+            ["tipo", ["ESPADA"]],
+            ["tipo", ["COPA"]],
+            ["tipo", ["PAUS"]],
+
+            // 38-40: Expressões
+            ["expr", ["term", "expr_tail"]],
+            ["expr_tail", ["binop", "term", "expr_tail"]],
+            ["expr_tail", []],
+
+            // 41-53: Operadores
+            ["binop", ["??"]],
+            ["binop", ["##"]],
+            ["binop", ["RECUA"]],
+            ["binop", ["MATA"]],
+            ["binop", ["BATE"]],
+            ["binop", ["SEGURA"]],
+            ["binop", ["CANTA"]],
+            ["binop", ["BLEFA"]],
+            ["binop", ["KING"]],
+            ["binop", ["JACK"]],
+            ["binop", ["AS"]],
+            ["binop", ["QUEEN"]],
+            ["binop", ["RESTO"]],
+
+            // 54-56: Termos
+            ["term", ["XX", "term"]],
+            ["term", ["(", "expr", ")"]],
+            ["term", ["valor"]]
+        ];
+
+        class SLRParser {
+            constructor() {
+                this.productions = productions;
+                this.actionTable = this.createActionTable();
+                this.gotoTable = this.createGotoTable();
+                this.stack = [0];
+                this.symbols = [];
+                this.errors = [];
+                this.tokens = [];
+                this.currentTokenIndex = 0;
+            }
+
+
+
+
+
+            createActionTable() {
+                // =================================================================
+                // TABELA SLR
+                // =================================================================
+
+                // Tokens que podem iniciar um comando
+                const startCmd = ['ID', 'RECEBE', 'MOSTRA', 'TRUCO', 'SEGUE', 'DISTRIBUI', 'CORTA'];
+                // Tokens que podem seguir um comando (iniciar outro, ou finalizar)
+                const followCmd = [...startCmd, '$', '}'];
+
+                // Tokens que podem seguir um 'valor' (em atribuição OU expressão)
+                const followExprValue = [
+                    '#', ')', 'PASSO', '??', '##', 'RECUA', 'MATA', 'BATE',
+                    'SEGURA', 'CANTA', 'BLEFA', 'KING', 'JACK', 'AS', 'QUEEN', 'RESTO'
+                ];
+
+                // Tokens que podem iniciar um 'term' (o que vem depois de um binop)
+                const firstTerm = [
+                    'NUM_INT', 'NUM_REAL', 'STRING', 'BOOLEAN', 'ID', 'XX', '('
+                ];
+
+                // Função auxiliar para criar regras de redução
+                const reduce = (rule, tokens) => {
+                    const actions = {};
+                    for (const token of tokens) {
+                        actions[token] = rule;
+                    }
+                    return actions;
+                };
+
+                return {
+                    0: { 'ID': 'S11', 'RECEBE': 'S28', 'MOSTRA': 'S33', 'TRUCO': 'S43', 'SEGUE': 'S83', 'DISTRIBUI': 'S90', 'CORTA': 'S104' },
+                    1: { '$': 'acc' },
+                    2: { 'ID': 'S11', 'RECEBE': 'S28', 'MOSTRA': 'S33', 'TRUCO': 'S43', 'SEGUE': 'S83', 'DISTRIBUI': 'S90', 'CORTA': 'S104', '$': 'R2', '}': 'R2' },
+                    3: { '$': 'R1', '}': 'R1' },
+                    4: reduce('R3', followCmd),
+                    5: reduce('R4', followCmd),
+                    6: reduce('R5', followCmd),
+                    7: reduce('R6', followCmd),
+                    8: reduce('R7', followCmd),
+                    9: reduce('R8', followCmd),
+                    10: reduce('R9', followCmd),
+                    11: { '(': 'S12' },
+                    12: { 'OURO': 'S14', 'ESPADA': 'S15', 'COPA': 'S16', 'PAUS': 'S17' },
+                    13: { ')': 'S18' },
+                    14: { ')': 'R34' },
+                    15: { ')': 'R35' },
+                    16: { ')': 'R36' },
+                    17: { ')': 'R37' },
+                    18: { '#': 'S19', 'VALE': 'S20' },
+                    19: reduce('R10', followCmd),
+                    20: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26' },
+                    21: { '#': 'S27' },
+                    22: reduce('R29', followExprValue),
+                    23: reduce('R30', followExprValue),
+                    24: reduce('R31', followExprValue),
+                    25: reduce('R32', followExprValue),
+                    26: reduce('R33', followExprValue),
+                    27: reduce('R11', followCmd),
+                    28: { '[': 'S29' },
+                    29: { 'ID': 'S30' },
+                    30: { ']': 'S31' },
+                    31: { '#': 'S32' },
+                    32: reduce('R12', followCmd),
+                    33: { '[': 'S34' },
+                    34: { 'ID': 'S37', 'STRING': 'S38' },
+                    35: { ']': 'S39' },
+                    36: { ',': 'S41', ']': 'R14' },
+                    37: { ',': 'R17', ']': 'R17' },
+                    38: { ',': 'R16', ']': 'R16' },
+                    39: { '#': 'S40' },
+                    40: reduce('R13', followCmd),
+                    41: { 'ID': 'S37', 'STRING': 'S38' },
+                    42: { ']': 'R15' },
+                    43: { '(': 'S44' },
+                    44: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26', 'XX': 'S46', '(': 'S47' },
+                    45: { ')': 'R40', 'PASSO': 'R40', '??': 'S52', '##': 'S53', 'RECUA': 'S54', 'MATA': 'S55', 'BATE': 'S56', 'SEGURA': 'S57', 'CANTA': 'S58', 'BLEFA': 'S59', 'KING': 'S60', 'JACK': 'S61', 'AS': 'S62', 'QUEEN': 'S63', 'RESTO': 'S64' },
+                    46: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26', 'XX': 'S46', '(': 'S47' },
+                    47: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26', 'XX': 'S46', '(': 'S47' },
+                    48: reduce('R56', followExprValue),
+                    49: { ')': 'R38', 'PASSO': 'R38' },
+                    50: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26', 'XX': 'S46', '(': 'S47' },
+                    51: { ')': 'R41', 'PASSO': 'R41' },
+                    52: reduce('R41', firstTerm),
+                    53: reduce('R42', firstTerm),
+                    54: reduce('R43', firstTerm),
+                    55: reduce('R44', firstTerm),
+                    56: reduce('R45', firstTerm),
+                    57: reduce('R46', firstTerm),
+                    58: reduce('R47', firstTerm),
+                    59: reduce('R48', firstTerm),
+                    60: reduce('R49', firstTerm),
+                    61: reduce('R50', firstTerm),
+                    62: reduce('R51', firstTerm),
+                    63: reduce('R52', firstTerm),
+                    64: reduce('R53', firstTerm),
+                    65: reduce('R54', followExprValue),
+                    66: { ')': 'S67' },
+                    67: reduce('R55', followExprValue),
+                    68: { ')': 'R40', 'PASSO': 'R40', '??': 'S52', '##': 'S53', 'RECUA': 'S54', 'MATA': 'S55', 'BATE': 'S56', 'SEGURA': 'S57', 'CANTA': 'S58', 'BLEFA': 'S59', 'KING': 'S60', 'JACK': 'S61', 'AS': 'S62', 'QUEEN': 'S63', 'RESTO': 'S64' },
+                    69: { ')': 'R39', 'PASSO': 'R39' },
+                    70: { ')': 'S71' },
+                    71: { '{': 'S72' },
+                    72: { 'ID': 'S11', 'RECEBE': 'S28', 'MOSTRA': 'S33', 'TRUCO': 'S43', 'SEGUE': 'S83', 'DISTRIBUI': 'S90', 'CORTA': 'S104', '$': 'R2', '}': 'R2' },
+                    73: { '}': 'S74' },
+                    74: { 'CORRE': 'S76', ...reduce('R20', followCmd) },
+                    75: reduce('R18', followCmd),
+                    76: { '{': 'S78' },
+                    77: reduce('R20', followCmd),
+                    78: { 'ID': 'S11', 'RECEBE': 'S28', 'MOSTRA': 'S33', 'TRUCO': 'S43', 'SEGUE': 'S83', 'DISTRIBUI': 'S90', 'CORTA': 'S104', '$': 'R2', '}': 'R2' },
+                    79: { '}': 'S80' },
+                    80: reduce('R19', followCmd),
+                    81: reduce('R21', followCmd),
+                    82: reduce('R22', followCmd),
+                    83: { '(': 'S84' },
+                    84: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26', 'XX': 'S46', '(': 'S47' },
+                    85: { ')': 'S86' },
+                    86: { '{': 'S87' },
+                    87: { 'ID': 'S11', 'RECEBE': 'S28', 'MOSTRA': 'S33', 'TRUCO': 'S43', 'SEGUE': 'S83', 'DISTRIBUI': 'S90', 'CORTA': 'S104', '$': 'R2', '}': 'R2' },
+                    88: { '}': 'S89' },
+                    89: reduce('R23', followCmd),
+                    90: { 'ID': 'S91' },
+                    91: { 'DE': 'S92' },
+                    92: { 'NUM_INT': 'S93', 'NUM_REAL': 'S94', 'ID': 'S95' },
+                    93: { 'ATE': 'R25', '{': 'R25' },
+                    94: { 'ATE': 'R26', '{': 'R26' },
+                    95: { 'ATE': 'R27', '{': 'R27' },
+                    // =================================
+                    96: { 'ATE': 'S97' },
+                    97: { 'NUM_INT': 'S22', 'NUM_REAL': 'S23', 'STRING': 'S24', 'BOOLEAN': 'S25', 'ID': 'S26', 'XX': 'S46', '(': 'S47' },
+                    98: { 'PASSO': 'S99' },
+                    99: { 'NUM_INT': 'S93', 'NUM_REAL': 'S94', 'ID': 'S95' },
+                    100: { '{': 'S101' },
+                    101: { 'ID': 'S11', 'RECEBE': 'S28', 'MOSTRA': 'S33', 'TRUCO': 'S43', 'SEGUE': 'S83', 'DISTRIBUI': 'S90', 'CORTA': 'S104', '$': 'R2', '}': 'R2' },
+                    102: { '}': 'S103' },
+                    103: reduce('R24', followCmd),
+                    104: { '#': 'S105' },
+                    105: reduce('R28', followCmd)
+                };
+            }
+
+
+            createGotoTable() {
+                return {
+                    0: { 'lista_comandos': 1, 'comando': 2, 'declaracao': 4, 'atribuicao': 5, 'entrada': 6, 'saida': 7, 'condicional': 8, 'laco_repeticao': 9, 'break': 10 },
+                    2: { 'lista_comandos': 3, 'comando': 2, 'declaracao': 4, 'atribuicao': 5, 'entrada': 6, 'saida': 7, 'condicional': 8, 'laco_repeticao': 9, 'break': 10, 'laco_while': 81, 'laco_for': 82 },
+                    12: { 'tipo': 13 },
+                    20: { 'valor': 21 },
+                    34: { 'lista_valores': 35, 'valor_saida': 36 },
+                    41: { 'lista_valores': 42, 'valor_saida': 36 },
+                    44: { 'expr': 70, 'term': 45, 'valor': 48 },
+                    45: { 'expr_tail': 49, 'binop': 50 },
+                    46: { 'term': 65 },
+                    47: { 'expr': 66, 'term': 45, 'valor': 48 },
+                    50: { 'term': 68, 'valor': 48 },
+                    68: { 'expr_tail': 69, 'binop': 50 },
+                    72: { 'lista_comandos': 73, 'comando': 2, 'declaracao': 4, 'atribuicao': 5, 'entrada': 6, 'saida': 7, 'condicional': 8, 'laco_repeticao': 9, 'break': 10, 'laco_while': 81, 'laco_for': 82 },
+                    74: { 'opcional_else': 75 },
+                    78: { 'lista_comandos': 79, 'comando': 2, 'declaracao': 4, 'atribuicao': 5, 'entrada': 6, 'saida': 7, 'condicional': 8, 'laco_repeticao': 9, 'break': 10, 'laco_while': 81, 'laco_for': 82 },
+                    84: { 'expr': 85, 'term': 45, 'valor': 48 },
+                    87: { 'lista_comandos': 88, 'comando': 2, 'declaracao': 4, 'atribuicao': 5, 'entrada': 6, 'saida': 7, 'condicional': 8, 'laco_repeticao': 9, 'break': 10, 'laco_while': 81, 'laco_for': 82 },
+                    92: { 'valor_for': 96 },
+                    97: { 'expr': 98, 'term': 45, 'valor': 48 },
+                    99: { 'valor_for': 100 },
+                    101: { 'lista_comandos': 102, 'comando': 2, 'declaracao': 4, 'atribuicao': 5, 'entrada': 6, 'saida': 7, 'condicional': 8, 'laco_repeticao': 9, 'break': 10, 'laco_while': 81, 'laco_for': 82 }
+                };
+            }
+
+            setTokens(tokens) {
+                this.tokens = tokens.filter(token => token.token !== "COMENTARIO");
+                this.currentTokenIndex = 0;
+                this.stack = [0];
+                this.symbols = [];
+                this.errors = [];
+                this.trajectory = []; // <-- ADICIONE ESTA LINHA
+            }
+
+            getCurrentToken() {
+                if (this.currentTokenIndex < this.tokens.length) {
+                    return this.tokens[this.currentTokenIndex];
+                }
+                return { token: '$', lexema: '$', linha: 0, coluna: 0 };
+            }
+
+
+
+            parse() {
+                let step = 0;
+                const maxSteps = 1000;
+
+                while (step++ < maxSteps) {
+                    const state = this.stack[this.stack.length - 1];
+                    const currentToken = this.getCurrentToken();
+                    const tokenType = currentToken.token;
+
+                    if (this.actionTable[state] && this.actionTable[state][tokenType]) {
+                        const action = this.actionTable[state][tokenType];
+
+                        if (action === 'acc') {
+                            this.trajectory.push("✅ ACEITO (acc)"); // <-- ADICIONAL
+                            if (this.errors.length > 0) {
+                                return { success: false, errors: this.errors, trajectory: this.trajectory };
+                            }
+                            return { success: true, errors: [], trajectory: this.trajectory };
+
+                        } else if (action.startsWith('S')) {
+                            // ==========================
+                            // REGISTRAR SHIFT
+                            const nextState = parseInt(action.substring(1));
+                            this.trajectory.push(`➡️ Empilhar (Shift): ${currentToken.lexema} (Ir para S${nextState})`);
+                            // ==========================
+                            this.stack.push(nextState);
+                            this.symbols.push(currentToken);
+                            this.currentTokenIndex++;
+
+                        } else if (action.startsWith('R')) {
+                            // ==========================
+                            // REGISTRAR REDUCE
+                            const productionNum = parseInt(action.substring(1));
+                            const production = this.productions[productionNum];
+                            const ruleString = `${production[0]} -> ${production[1].length > 0 ? production[1].join(' ') : 'ε'}`;
+                            this.trajectory.push(`⬅️ Reduzir (Reduce): ${ruleString}`);
+                            // ==========================
+                            this.reduce(productionNum);
+
+                        } else {
+                            this.errors.push(`Ação inválida: ${action} no estado ${state}`);
+                            return { success: false, errors: this.errors, trajectory: this.trajectory };
+                        }
+
+                    } else {
+                        const expected = this.actionTable[state] ? Object.keys(this.actionTable[state]).join(', ') : 'nenhuma';
+                        this.errors.push(`Erro sintático na linha ${currentToken.linha}, coluna ${currentToken.coluna}. Token inesperado: '${currentToken.lexema}'. Esperado: ${expected}`);
+                        this.recoverFromError();
+                        if (this.errors.length > 5) {
+                            this.errors.push("Muitos erros encontrados. Análise abortada.");
+                            return { success: false, errors: this.errors, trajectory: this.trajectory };
+                        }
+                    }
+
+                    if (this.currentTokenIndex >= this.tokens.length && this.stack.length === 2 && this.stack[1] === 1) {
+                        if (this.errors.length > 0) {
+                            return { success: false, errors: this.errors, trajectory: this.trajectory };
+                        }
+                        return { success: true, errors: [], trajectory: this.trajectory };
+                    }
+                }
+
+                this.errors.push("Análise muito longa - possível loop infinito");
+                return { success: false, errors: this.errors, trajectory: this.trajectory };
+            }
+
+            reduce(productionNum) {
+                const production = this.productions[productionNum];
+                const lhs = production[0];
+                const rhs = production[1];
+
+                for (let i = 0; i < rhs.length; i++) {
+                    this.stack.pop();
+                    this.symbols.pop();
+                }
+
+                this.symbols.push({ token: lhs, lexema: lhs });
+
+                const currentState = this.stack[this.stack.length - 1];
+                if (this.gotoTable[currentState] && this.gotoTable[currentState][lhs]) {
+                    const nextState = this.gotoTable[currentState][lhs];
+                    this.stack.push(nextState);
+                } else {
+                    this.errors.push(`Erro de GOTO: estado ${currentState}, símbolo ${lhs}`);
+                }
+            }
+
+            recoverFromError() {
+                const syncTokens = ['#', '}', 'RECEBE', 'MOSTRA', 'TRUCO', 'SEGUE', 'DISTRIBUI', 'CORTA', 'ID'];
+                let currentToken = this.getCurrentToken();
+
+                while (this.currentTokenIndex < this.tokens.length && !syncTokens.includes(currentToken.token)) {
+                    this.currentTokenIndex++;
+                    currentToken = this.getCurrentToken();
+                }
+
+                if (this.currentTokenIndex < this.tokens.length) {
+                    this.stack = [0];
+                    this.symbols = [];
+                } else {
+                    this.currentTokenIndex++;
+                }
+            }
+        }
+
+        // =============================================
+        // INTERFACE E INTEGRAÇÃO
+        // =============================================
+
+        const slrParser = new SLRParser();
+
+        function mostrarResultado(mensagem, tipo) {
+            const resultados = document.getElementById("resultados");
+            const div = document.createElement("div");
+            div.className = tipo;
+            div.textContent = mensagem;
+            resultados.appendChild(div);
+            resultados.scrollTop = resultados.scrollHeight;
+        }
+
+        function mostrarTokens(tokens) {
+            const resultados = document.getElementById("resultados");
+            const tokensDiv = document.createElement("div");
+            tokensDiv.className = "tokens";
+            tokensDiv.innerHTML = "<strong>📋 Tokens Reconhecidos:</strong>";
+
+            tokens.forEach(token => {
+                const tokenItem = document.createElement("div");
+                tokenItem.className = "token-item";
+                tokenItem.textContent = `<${token.token}, "${token.lexema}"> [Linha: ${token.linha}, Coluna: ${token.coluna}]`;
+                tokensDiv.appendChild(tokenItem);
+            });
+
+            resultados.appendChild(tokensDiv);
+        }
+
+
+        function mostrarTrajetoria(trajectory) {
+            const resultados = document.getElementById("resultados");
+            const trajectoryDiv = document.createElement("div");
+            trajectoryDiv.className = "tokens"; // Reutilizando a classe "tokens" para o estilo
+            trajectoryDiv.innerHTML = "<strong>👣 Trajetória da Análise Sintática:</strong>";
+
+            const pre = document.createElement("pre");
+            pre.style.fontFamily = "monospace";
+            pre.style.marginTop = "10px";
+            pre.style.paddingLeft = "10px";
+            pre.style.borderLeft = "2px solid #ddd";
+
+            trajectory.forEach(step => {
+                const stepItem = document.createElement("div");
+                stepItem.textContent = step;
+                pre.appendChild(stepItem);
+            });
+
+            trajectoryDiv.appendChild(pre);
+            resultados.appendChild(trajectoryDiv);
+        }
+
+        document.getElementById("button-analisador-lexico").addEventListener('click', () => {
+            codigo_fonte = document.getElementById("console").value;
+            document.getElementById("resultados").innerHTML = "";
+
+            if (codigo_fonte.length > 0) {
+                const tokens = executarAnalisadorLexicoAFD(codigo_fonte, getTabelaSimbolos());
+                mostrarResultado(`✅ Análise léxica concluída! ${tokens.length} tokens encontrados.`, "success");
+                mostrarTokens(tokens);
+            } else {
+                mostrarResultado("❌ Nenhum código-fonte encontrado!", "error");
+            }
+        });
+
+        document.getElementById("button-analisador-sintatico").addEventListener('click', () => {
+            codigo_fonte = document.getElementById("console").value;
+            document.getElementById("resultados").innerHTML = "";
+
+            if (codigo_fonte.length > 0) {
+                const tokens = executarAnalisadorLexicoAFD(codigo_fonte, getTabelaSimbolos());
+                slrParser.setTokens(tokens);
+                const result = slrParser.parse();
+
+                if (result.success) {
+                    mostrarResultado("✅ Análise sintática concluída com SUCESSO! O código TRUCODE está sintaticamente correto.", "success");
+                    mostrarTrajetoria(result.trajectory);
+                } else {
+                    mostrarResultado("❌ Erros sintáticos encontrados:", "error");
+                    result.errors.forEach(error => mostrarResultado("  • " + error, "error"));
+                }
+            } else {
+                mostrarResultado("❌ Nenhum código-fonte encontrado!", "error");
+            }
+        });
+
+        document.getElementById("button-analise-completa").addEventListener('click', () => {
+            codigo_fonte = document.getElementById("console").value;
+            document.getElementById("resultados").innerHTML = "";
+
+            if (codigo_fonte.length > 0) {
+                mostrarResultado("🔍 Iniciando análise completa...", "success");
+
+                const tokens = executarAnalisadorLexicoAFD(codigo_fonte, getTabelaSimbolos());
+                mostrarTokens(tokens);
+
+                slrParser.setTokens(tokens);
+                const result = slrParser.parse();
+
+                if (result.success) {
+                    mostrarResultado("🎉 ANÁLISE COMPLETA CONCLUÍDA COM SUCESSO! O código TRUCODE está correto.", "success");
+                    mostrarTrajetoria(result.trajectory); // <-- ADICIONE ESTA LINHA
+                } else {
+                    mostrarResultado("❌ Análise léxica concluída, mas erros sintáticos encontrados:", "error");
+                    result.errors.forEach(error => mostrarResultado("  • " + error, "error"));
+                }
+            } else {
+                mostrarResultado("❌ Nenhum código-fonte encontrado!", "error");
+            }
+        });
+    </script>
+</body>
+
+</html>

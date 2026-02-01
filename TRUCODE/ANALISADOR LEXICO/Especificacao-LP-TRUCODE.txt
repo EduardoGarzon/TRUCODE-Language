@@ -1,0 +1,223 @@
+--------------------------------------------------------------------------------------------------------
+1. Nome da Linguagem: TRUCODE
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+2. Tipos de dados primitivos suportados: 
+
+    - int     (OURO)   -> Números inteiros.
+    - float   (ESPADA) -> Números reais.
+    - string  (COPA)   -> Textos.
+    - boolean (PAUS)   -> Verdadeiro ou Falso.
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+3. Operadores Suportados:
+
+    A. Operadores Lógicos:
+        - AND   (##)
+        - OR    (??)
+        - NOT   (XX)   
+
+    B. Operadores Relacionais:
+        - <	(RECUA)
+        - >     (MATA)
+        - ==    (BATE)
+        - <=    (SEGURA)   
+        - >=    (CANTA)
+        - !=    (BLEFA)
+
+    C.	Operadores Aritméticos: 
+        - + 	(KING) 
+        - - 	(JACK)
+        - / 	(QUEEN)
+        - * 	(AS)    
+        - % 	(RESTO)
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+4. Formação dos Identificadores (Regra para Nomes de Variáveis):
+
+    - Expressão Regular : [a-zA-Z]([a-zA-Z0-9_])*
+    - Tamanho Mínimo    : 1 caractere.     
+    - Tamanho Máximo    : 12 caracteres.    
+    - Não podem ser palavras reservadas.
+    - Case Sensitive.   
+
+    EXEMPLOS:
+        - Declaração             	: Nome-da-Variavel[Tipo da Variável]#
+        - Declaração e Atribuição	: Nome-da-Variavel[Tipo da Variãvel] VALE valor#
+--------------------------------------------------------------------------------------------------------
+ 
+--------------------------------------------------------------------------------------------------------
+5. Comandos de Entrada e Saída (Um para Entrada e Um para Saída):
+
+    - Entrada   : RECEBE -> RECEBE[identificador]# 
+    - Saída     : MOSTRA -> MOSTRA[lista de valores]# 
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+6. Estruturas Suportadas pela Linguagem (Decisão, Repetição, etc.) e seus Respectivos Comandos. 
+
+    - Estrutura de Decisão (IF - ELSE): 
+
+        TRUCO(Condition) {
+            ...
+        } 
+        CORRE {
+            ...
+        }
+
+    - Laco de Repetição Condicional (WHILE):
+        
+        SEGUE(Condition) {
+            ...
+        }
+
+    - Laco de Repetição Contado (FOR):
+
+        DISTRIBUI identificador DE inicio ATE fim PASSO valor {
+            ...
+        }
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+7. Palavras-Reservadas.
+
+    - Comandos de E/S:
+        1. RECEBE
+        2. MOSTRA
+
+    - Tipos de Dados Primitivos:
+        3. OURO     (int)
+        4. ESPADA   (float)
+        5. COPA     (string)
+        6. PAUS     (boolean)
+
+    - Operadores Lógicos:
+
+    - Operadores Relacionais:
+        7.  RECUA   (<)
+        8.  MATA    (>)
+        9.  BATE    (==)
+        10. SEGURA  (<=) 
+        11. CANTA   (>=)
+        12. BLEFA   (!=)
+
+    - Operadores Aritméticos:
+        13. KING    (+) 
+        14. JACK    (-) 
+        15. QUEEN   (/)
+        16. AS      (*)
+        17. RESTO   (%)
+
+    - Estruturas de controle:
+        18. TRUCO       (if)
+        19. CORRE       (else)
+        20. SEGUE       (while)
+        21. DISTRIBUI   (for)
+        22. DE          (Início no Laço Contado)
+        23. ATE         (Limite de Laço Contado)
+        24. VALE        (Atribuição, =)
+        25. CORTA       (Break) 
+
+    - Constantes booleanas:
+        26. REAL    (True)
+        27. FAKE    (False)
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+8. Operadores Simbólicos:
+
+    - Operadores Lógicos:
+        - AND   (##)
+        - OR    (??)
+        - NOT   (XX)
+
+    - Delimitadores e Símbolos Especiais:
+        - @@  (Comentário de Linha)
+        - #   (Delimitar de Fim de Linha, ;)
+--------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------
+9. Estrutura Geral do Programa (Sintaxe):
+
+
+-----------------------------------------------
+EXEMPLO 1:
+-----------------------------------------------
+@@ Declaração de Variáveis
+limite[OURO] VALE 0#
+counter[OURO]#
+
+@@ Entrada e Saída de Dados
+MOSTRA["Informe um valor: "]#
+RECEBE[limite]#
+
+@@ Estrutura Condicional
+TRUCO(limite MATA 0) {
+
+    @@ Laco de Repeticao Contado
+    DISTRIBUI counter DE 0 ATE limite PASSO 1 {
+        MOSTRA[counter]#
+    }
+}
+CORRE {
+    MOSTRA["O limite deve ser maior que 0."]#
+}
+
+-----------------------------------------------
+EXEMPLO 2:
+-----------------------------------------------
+numA[OURO]#
+numB[OURO]#
+numC[ESPADA]#
+resultado[ESPADA]#
+
+RECEBE[numA]#
+RECEBE[numB]#
+RECEBE[numC]#
+
+@@ Expressão Aritmética
+resultado VALE ((numA KING numB) JACK (numC QUEEN 2))#
+
+MOSTRA["O resultado vale: ", resultado]#
+
+TRUCO(resultado CANTA 0) {
+    MOSTRA["O resultado é maior ou igual a zero."]#
+}
+CORRE {
+    MOSTRA["O resultado é menor que zero."]#
+}
+
+
+-----------------------------------------------
+EXEMPLO 3:
+-----------------------------------------------
+resultado[PAUS]#
+
+@@ Expressão com Operadores Relacionais.
+resultado VALE XX(((10 BLEFA 10) ## (5 RECUA 10)) ?? (100 MATA 50))#
+
+MOSTRA["O resultado é: ", resultado]#
+
+-----------------------------------------------
+EXEMPLO 4: TOKENS
+-----------------------------------------------
+@@ Definindo nome do jogador
+nome[COPA]#
+RECEBE[nome]# 
+
+TOKENS GERADOS:
+    - <COMENTARIO, "Definindo nome do jogador">
+    - <ID, nome>
+    - <(, (>
+    - <COPA, COPA>
+    - <), )>
+    - <#, #>
+    - <RECEBE>
+    - <[, [>
+    - <ID, nome>
+    - <], ]>
+    - <#, #>
+--------------------------------------------------------------------------------------------------------

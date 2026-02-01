@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>TRUCODE</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🃏 TRUCODE</h1>
+
+        <textarea id="console" class="console" placeholder="Digite seu código TRUCODE aqui...">
+numero(OURO)#
+numero(OURO) VALE 1 KING 2#</textarea>
+<!-- idade(OURO) VALE 25#
+salario(ESPADA) VALE 2500.50#
+ativo(PAUS) VALE REAL#
+
+MOSTRA["Nome: ", nome]#
+MOSTRA["Idade: ", idade]#
+MOSTRA["Salário: ", salario]#
+
+TRUCO(idade MATA 18) {
+    MOSTRA["Maior de idade"]#
+}
+CORRE {
+    MOSTRA["Menor de idade"]#
+}
+
+@@ Laço for exemplo
+DISTRIBUI i DE 1 ATE 5 PASSO 1 {
+    MOSTRA["Contagem: ", i]#
+} -->
+
+        <div>
+            <label for="input-carregar-codigo-fonte" class="input-carregar-codigo-fonte">💾 Carregar Código</label>
+            <input type="file" id="input-carregar-codigo-fonte" accept=".txt,.trucode">
+            <button id="button-analisador-lexico">🔍 Análise Léxica</button>
+            <button id="button-analisador-sintatico">⚙️ Análise Sintática</button>
+            <button id="button-analise-completa">🚀 Análise Completa</button>
+            <button id="button-limpar">🗑️ Limpar Console</button>
+        </div>
+
+        <div id="resultados" class="results" style="text-align: left;"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

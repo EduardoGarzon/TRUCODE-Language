@@ -1,0 +1,867 @@
+I0:
+    Fechamento(I0) { 
+        S' ::= • lista_comandos // I1            
+
+        lista_comandos ::= • comando lista_comandos // I2
+        lista_comandos ::= • comando                // I2
+
+        comando ::= • declaracao
+        comando ::= • atribuicao
+        comando ::= • entrada
+        comando ::= • saida
+        comando ::= • condicional
+        comando ::= • laco_repeticao
+        comando ::= • break
+
+        declaracao ::= • ID "[" tipo "]" "#"
+        atribuicao ::= • ID "[" tipo "]" "VALE" valor "#"
+
+        entrada ::= • "RECEBE" "[" ID "]" "#"
+        saida   ::= • "MOSTRA" "[" lista_valores "]" "#"
+
+        condicional ::= • "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else
+
+        laco_repeticao ::= • laco_while
+        laco_repeticao ::= • laco_for
+
+        laco_while ::= • "SEGUE" "(" expr ")" "{" lista_comandos "}"
+        laco_for   ::= • "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"
+
+        break ::= • "CORTA" "#"
+    }
+
+I1: ESTADO DE ACEITAÇÃO -> S' ::= lista_comandos •
+    goto(I0, lista_comandos) {
+        S' ::= lista_comandos • 
+    }
+
+---------
+comando
+---------
+I2: comando
+    goto(I0, comando) {
+        lista_comandos ::= comando • lista_comandos // I3
+        lista_comandos ::= comando •                // REDUÇÃO                
+
+        lista_comandos ::= • comando lista_comandos // I2
+        lista_comandos ::= • comando                // I2
+
+        comando ::= • declaracao        // I4
+        comando ::= • atribuicao        // I5
+        comando ::= • entrada           // I6
+        comando ::= • saida             // I7
+        comando ::= • condicional       // I8
+        comando ::= • laco_repeticao    // I9 
+        comando ::= • break             // I10
+
+        declaracao ::= • ID "[" tipo "]" "#"                // I11
+        atribuicao ::= • ID "[" tipo "]" "VALE" valor "#"   // I11
+
+        entrada ::= • "RECEBE" "[" ID "]" "#"               // I28
+        saida   ::= • "MOSTRA" "[" lista_valores "]" "#"    // I33
+
+        condicional ::= • "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else  // I43
+
+        laco_repeticao ::= • laco_while // I81
+        laco_repeticao ::= • laco_for   // I82
+
+        laco_while ::= • "SEGUE" "(" expr ")" "{" lista_comandos "}"    // I83
+        laco_for   ::= • "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I90
+
+        break ::= • "CORTA" "#" // I104
+    }
+
+I3: ESTADO DE REDUÇÃO -> lista_comandos ::= comando lista_comandos •
+    goto(I2, lista_comandos) {
+        lista_comandos ::= comando lista_comandos • 
+    }
+
+I4: ESTADO DE REDUÇÃO -> comando ::= declaracao •
+    goto(I2, declaracao) {
+        comando ::= declaracao •
+    }
+
+I5: ESTADO DE REDUÇÃO -> comando ::= atribuicao •
+    goto(I2, atribuicao) {
+        comando ::= atribuicao •
+    }
+
+I6: ESTADO DE REDUÇÃO -> comando ::= entrada •
+    goto(I2, entrada) {
+        comando ::= entrada •
+    }
+
+I7: ESTADO DE REDUÇÃO -> comando ::= saida •
+    goto(I2, saida) {
+        comando ::= saida •
+    }
+
+I8: ESTADO DE REDUÇÃO -> comando ::= condicional •
+    goto(I2, condicional) {
+        comando ::= condicional •
+    }
+
+I9: ESTADO DE REDUÇÃO -> comando ::= laco_repeticao •
+    goto(I2, laco_repeticao) {
+        comando ::= laco_repeticao •
+    }
+
+I10: ESTADO DE REDUÇÃO -> comando ::= break •
+    goto(I2, break) {
+        comando ::= break •
+    }
+
+------------
+declaracao
+atribuicao
+------------
+I11: ID
+    goto(I2, ID) {
+        declaracao ::= ID • "[" tipo "]" "#"                // I12
+        atribuicao ::= ID • "[" tipo "]" "VALE" valor "#"   // I12
+    }
+
+I12: "["
+    goto(I12, "[") {
+        declaracao ::= ID "[" • tipo "]" "#"                // I13
+        atribuicao ::= ID "[" • tipo "]" "VALE" valor "#"   // I13
+
+        tipo ::= • "OURO"   // I14
+        tipo ::= • "ESPADA" // I15
+        tipo ::= • "COPA"   // I16
+        tipo ::= • "PAUS"   // I17
+    }
+
+I13: tipo
+    goto(I12, tipo) {
+        declaracao ::= ID "[" tipo • "]" "#"                // I18    
+        atribuicao ::= ID "[" tipo • "]" "VALE" valor "#"   // I18
+    }
+
+I14: ESTADO DE REDUÇÃO -> tipo ::= "OURO" •
+    goto(I12, "OURO") {
+        tipo ::= "OURO" •
+    }
+
+I15: ESTADO DE REDUÇÃO -> tipo ::= "ESPADA" •
+    goto(I12, "ESPADA") {
+        tipo ::= "ESPADA" •
+    }
+
+I16: ESTADO DE REDUÇÃO -> tipo ::= "COPA" •
+    goto(I12, "COPA") {
+        tipo ::= "COPA" •
+    }
+
+I17: ESTADO DE REDUÇÃO -> tipo ::= "PAUS" •
+    goto(I12, "PAUS") {
+        tipo ::= "PAUS" •
+    }
+
+I18: "]"
+    goto(I13, "]") {
+        declaracao ::= ID "[" tipo "]" • "#"                // I19               
+        atribuicao ::= ID "[" tipo "]" • "VALE" valor "#"   // I20
+    }
+
+I19: ESTADO DE REDUÇÃO -> declaracao ::= ID "[" tipo "]" "#" •
+    goto(I19, "#") {
+        declaracao ::= ID "[" tipo "]" "#" •                
+    }
+
+I20: "VALE"
+    goto(I18, "VALE") {
+        atribuicao ::= ID "[" tipo "]" "VALE" • valor "#"   // I21
+        valor ::= • NUM_INT     // I22
+        valor ::= • NUM_REAL    // I23
+        valor ::= • STRING      // I24
+        valor ::= • BOOLEAN     // I25
+        valor ::= • ID          // I26
+    }
+
+I21: valor
+    goto(I20, valor) {
+        atribuicao ::= ID "[" tipo "]" "VALE" valor • "#"   // I27 
+    }
+
+I22: ESTADO DE REDUÇÃO -> valor ::= NUM_INT •
+    goto(I20, NUM_INT) {
+        valor ::= NUM_INT •
+    }
+
+I23: ESTADO DE REDUÇÃO -> valor ::= NUM_REAL •
+    goto(I20, NUM_REAL) {
+        valor ::= NUM_REAL •
+    }
+
+I24: ESTADO DE REDUÇÃO -> valor ::= STRING •
+    goto(I20, STRING) {
+        valor ::= STRING •
+    }
+
+I25: ESTADO DE REDUÇÃO -> valor ::= BOOLEAN •
+    goto(I20, BOOLEAN) {
+        valor ::= BOOLEAN •
+    }
+
+I26: ESTADO DE REDUÇÃO -> valor ::= ID •
+    goto(I20, ID) {
+        valor ::= ID •
+    }
+
+I27: ESTADO DE REDUÇÃO -> atribuicao ::= ID "[" tipo "]" "VALE" valor "#" •
+    goto(I21, "#") {
+        atribuicao ::= ID "[" tipo "]" "VALE" valor "#" • 
+    }
+
+---------
+entrada
+---------
+I28: "RECEBE"
+    goto(I2, "RECEBE") {
+        entrada ::= "RECEBE" • "[" ID "]" "#"   // I29
+    }
+
+I29: "["
+    goto(I28, "[") {
+        entrada ::= "RECEBE" "[" • ID "]" "#"   // I30
+    }
+
+I30: ID
+    goto(I29, ID) {
+        entrada ::= "RECEBE" "[" ID • "]" "#"   //  I31
+    }
+
+I31: "]"
+    goto(I30, "]") {
+        entrada ::= "RECEBE" "[" ID "]" • "#"   // I32 
+    }
+
+I32: ESTADO DE REDUÇÃO -> entrada ::= "RECEBE" "[" ID "]" "#" •
+    goto(I31, "#") {
+        entrada ::= "RECEBE" "[" ID "]" "#" • 
+    }
+
+---------
+saida
+---------
+I33: "MOSTRA"
+    goto(I2, "MOSTRA") {
+        saida ::= "MOSTRA" • "[" lista_valores "]" "#"  // 34
+    }
+
+I34: "["
+    goto(I33, "[") {
+        saida ::= "MOSTRA" "[" • lista_valores "]" "#"  //  I35
+
+        lista_valores ::= • valor_saida                     // I36
+        lista_valores ::= • valor_saida "," lista_valores   // I36
+        
+        valor_saida ::= • ID        // I34
+        valor_saida ::= • STRING    // I34
+    }
+
+I35: lista_valores
+    goto(I34, lista_valores) {
+        saida ::= "MOSTRA" "[" lista_valores • "]" "#"  // I39
+    }
+
+I36: valor_saida
+    goto(I34, valor_saida) {
+        lista_valores ::= valor_saida • // REDUÇÃO
+        lista_valores ::= valor_saida • "," lista_valores // I41
+    }
+
+I37: ESTADO DE REDUÇÃO -> valor_saida ::= ID •
+    goto(I34, ID) {
+        valor_saida ::= ID •
+    }
+
+I38: ESTADO DE REDUÇÃO -> valor_saida ::= STRING • 
+    goto(I34, STRING) {
+        valor_saida ::= STRING •
+    }
+
+I39: "]"
+    goto(I35, "]") {
+        saida ::= "MOSTRA" "[" lista_valores "]" • "#"  // I40
+    }
+
+I40: ESTADO DE REDUÇÃO -> saida ::= "MOSTRA" "[" lista_valores "]" "#" •
+    goto(I39, "#") {
+        saida ::= "MOSTRA" "[" lista_valores "]" "#" •
+    }
+
+I41: ","
+    goto(I37, ",") {
+        lista_valores ::= valor_saida "," • lista_valores   // I42
+
+        lista_valores ::= • valor_saida                     // 36
+        lista_valores ::= • valor_saida "," lista_valores   // 36
+        
+        valor_saida ::= • ID        // 37
+        valor_saida ::= • STRING    // 38
+    }
+
+I42: ESTADO DE REDUÇÃO -> lista_valores ::= valor_saida "," lista_valores •
+    goto(I41, lista_valores) {
+        lista_valores ::= valor_saida "," lista_valores •
+    }
+
+-------------
+condicional
+-------------
+I43: "TRUCO"
+    goto(I2, "TRUCO") {
+        condicional ::= "TRUCO" • "(" expr ")" "{" lista_comandos "}" opcional_else  // I44
+    }
+
+I44: "("
+    goto(I43, "(") {
+        condicional ::= "TRUCO" "(" • expr ")" "{" lista_comandos "}" opcional_else // I70
+        
+        expr ::= • term expr_tail   // I45
+
+        term ::= • "XX" term    // I46      
+        term ::= • "(" expr ")" // I47    
+        term ::= • valor        // I48
+
+        valor ::= • NUM_INT     // I22
+        valor ::= • NUM_REAL    // I23
+        valor ::= • STRING      // I24
+        valor ::= • BOOLEAN     // I25
+        valor ::= • ID          // I26
+    }
+
+I45: term
+    goto(I44, term) {
+        expr ::= term • expr_tail   // I49
+        
+        expr_tail ::= • binop term expr_tail // I50
+        expr_tail ::= • ε                    // I51
+
+        binop ::= • "??"    // I52      		
+        binop ::= • "##"    // I53												
+        
+        binop ::= • "RECUA"     // I54
+        binop ::= • "MATA"      // I55
+        binop ::= • "BATE"      // I56
+        binop ::= • "SEGURA"    // I57
+        binop ::= • "CANTA"     // I58
+        binop ::= • "BLEFA"	    // I59
+        
+        binop ::= • "KING"  // 60
+        binop ::= • "JACK"	// 61								
+        
+        binop ::= • "AS"    // 62  
+        binop ::= • "QUEEN" // 63   
+        binop ::= • "RESTO" // 64  
+    }
+
+I46: "XX"
+    goto(I44, "XX") {
+        term ::= "XX" • term    // I65
+
+        term ::= • "XX" term    // I46     
+        term ::= • "(" expr ")" // I47  
+        term ::= • valor        // I48
+
+        valor ::= • NUM_INT     // I22
+        valor ::= • NUM_REAL    // I23
+        valor ::= • STRING      // I24
+        valor ::= • BOOLEAN     // I25
+        valor ::= • ID          // I26     
+    }
+
+I47: "("
+    goto(I44, "(") {
+        term ::= "(" • expr ")"     // I66    
+
+        expr ::= • term expr_tail   // I45 
+
+        term ::= • "XX" term        // I46          
+        term ::= • "(" expr ")"     // I47     
+        term ::= • valor            // I48
+
+        valor ::= • NUM_INT         // I22
+        valor ::= • NUM_REAL        // I23
+        valor ::= • STRING          // I24
+        valor ::= • BOOLEAN         // I25
+        valor ::= • ID              // I26
+    }
+
+I48: ESTADO DE REDUÇÃO -> term ::= valor • 
+    goto(I44, valor) {
+        term ::= valor •    
+    }
+
+I49: ESTADO DE REDUÇÃO -> expr ::= term expr_tail •
+    goto(I45, expr_tail) {
+        expr ::= term expr_tail •
+    }
+
+I50: binop
+    goto(I45, binop) {
+        expr_tail ::=  binop • term expr_tail   // I68
+        
+        term ::= • "XX" term    // I46      
+        term ::= • "(" expr ")" // I47   
+        term ::= • valor        // I48
+
+        valor ::= • NUM_INT     // I22
+        valor ::= • NUM_REAL    // I23
+        valor ::= • STRING      // I24
+        valor ::= • BOOLEAN     // I25
+        valor ::= • ID          // I26 
+    }
+
+I51: ESTADO DE REDUÇÃO -> expr_tail ::= ε • 
+    goto(I45, ε) {
+        expr_tail ::= ε •
+    }
+
+I52: ESTADO DE REDUÇÃO -> binop ::= "??" • 
+    goto(I45, "??") {
+        binop ::= "??" •      		
+    }
+
+I53: ESTADO DE REDUÇÃO -> binop ::= "##" •
+    goto(I45, "##") {
+        binop ::= "##" •												
+    }
+
+I54: ESTADO DE REDUÇÃO -> binop ::= "RECUA" •
+    goto(I45, "RECUA") {
+        binop ::= "RECUA" • 
+    }
+
+I55: ESTADO DE REDUÇÃO -> binop ::= "MATA" •
+    goto(I45, "MATA") {
+        binop ::= "MATA" • 
+    }
+
+I56: ESTADO DE REDUÇÃO -> binop ::= "BATE" •
+    goto(I45, "BATE") {
+        binop ::= "BATE" •
+    }
+
+I57: ESTADO DE REDUÇÃO -> binop ::= "SEGURA" •
+    goto(I45, "SEGURA") {
+        binop ::= "SEGURA" •
+    }
+
+I58: ESTADO DE REDUÇÃO -> binop ::= "CANTA" •
+    goto(I45, "CANTA") {
+        binop ::= "CANTA" •
+    }
+
+I59: ESTADO DE REDUÇÃO -> binop ::= "BLEFA" •
+    goto(I45, "BLEFA") {
+        binop ::= "BLEFA" •	
+    }
+
+I60: ESTADO DE REDUÇÃO -> binop ::= "KING" •
+    goto(I45, "KING") {
+        binop ::= "KING" •
+    }
+
+I61: ESTADO DE REDUÇÃO -> binop ::= "JACK" •
+    goto(I45, "JACK") {
+        binop ::= "JACK" •									
+    }
+
+I62: ESTADO DE REDUÇÃO -> binop ::= "AS" •      
+    goto(I45, "AS") {
+        binop ::= "AS" •      
+    }
+
+I63: ESTADO DE REDUÇÃO -> binop ::= "QUEEN" •
+    goto(I45, "QUEEN") {
+        binop ::= "QUEEN" •   
+    }
+
+I64: ESTADO DE REDUÇÃO -> binop ::= "RESTO" • 
+    goto(I45, "RESTO") {
+        binop ::= "RESTO" •   
+    }
+
+I65: ESTADO DE REDUÇÃO -> term ::= "XX" term • 
+    goto(I46, term) {
+        term ::= "XX" term • 
+    }
+
+I66: expr
+    goto(I47, expr) {
+        term ::= "("  expr • ")" // I67    
+    }
+
+I67: ESTADO DE REDUÇÃO -> term ::= "(" expr ")" • 
+    goto(I66, ")") {
+        term ::= "(" expr ")" •
+    }
+
+I68: term
+    goto(I50, term) {
+        expr_tail ::= binop term • expr_tail    // I69
+        
+        expr_tail ::= • binop term expr_tail    // I50
+        expr_tail ::= • ε                       // I51
+
+        binop ::= • "??"    // I52      		
+        binop ::= • "##"    // I53												
+        
+        binop ::= • "RECUA"     // I54
+        binop ::= • "MATA"      // I55
+        binop ::= • "BATE"      // I56
+        binop ::= • "SEGURA"    // I57
+        binop ::= • "CANTA"     // I58
+        binop ::= • "BLEFA"	    // I59
+        
+        binop ::= • "KING"  // 60
+        binop ::= • "JACK"	// 61								
+        
+        binop ::= • "AS"    // 62  
+        binop ::= • "QUEEN" // 63   
+        binop ::= • "RESTO" // 64
+    }
+
+I69: ESTADO DE REDUÇÃO -> expr_tail ::= binop term expr_tail •
+    goto(I68, expr_tail) {
+        expr_tail ::= binop term expr_tail •
+    }
+
+I70: expr
+    goto(I44, expr) {
+        condicional ::= "TRUCO" "(" expr • ")" "{" lista_comandos "}" opcional_else // I71
+    }
+
+I71: ")"
+    goto(I70, ")") {
+        condicional ::= "TRUCO" "(" expr ")" • "{" lista_comandos "}" opcional_else // I72
+    }
+
+I72: "{"
+    goto(I71, "{") {
+        condicional ::= "TRUCO" "(" expr ")" "{" • lista_comandos "}" opcional_else // I73
+
+        lista_comandos ::= • comando lista_comandos // I2
+        lista_comandos ::= • comando                // I2
+
+        comando ::= • declaracao        // I4
+        comando ::= • atribuicao        // I5
+        comando ::= • entrada           // I6
+        comando ::= • saida             // I7
+        comando ::= • condicional       // I8
+        comando ::= • laco_repeticao    // I9 
+        comando ::= • break             // I10
+
+        declaracao ::= • ID "[" tipo "]" "#"                // I11
+        atribuicao ::= • ID "[" tipo "]" "VALE" valor "#"   // I11
+
+        entrada ::= • "RECEBE" "[" ID "]" "#"               // I28
+        saida   ::= • "MOSTRA" "[" lista_valores "]" "#"    // I33
+
+        condicional ::= • "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else  // I43
+
+        laco_repeticao ::= • laco_while // I81
+        laco_repeticao ::= • laco_for   // I82
+
+        laco_while ::= • "SEGUE" "(" expr ")" "{" lista_comandos "}"    // I83
+        laco_for   ::= • "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I90
+
+        break ::= • "CORTA" "#" // I104
+    }
+
+I73: lista_comandos
+    goto(I72, lista_comandos) {
+        condicional ::= "TRUCO" "(" expr ")" "{"  lista_comandos • "}" opcional_else // I74
+    }
+
+I74: "}"
+    goto(I73, "}") {
+        condicional ::= "TRUCO" "(" expr ")" "{"  lista_comandos  "}" • opcional_else   // I75
+        opcional_else ::= • "CORRE" "{" lista_comandos "}"  // I76
+        opcional_else ::= • ε   // I77
+    }
+
+I75: ESTADO DE REDUÇÃO -> condicional ::= "TRUCO" "(" expr ")" "{"  lista_comandos  "}" opcional_else •
+    goto(I74, opcional_else) {
+        condicional ::= "TRUCO" "(" expr ")" "{"  lista_comandos  "}" opcional_else •
+    }
+
+I76: "CORRE"
+    goto(I74, "CORRE") {
+        opcional_else ::=  "CORRE" • "{" lista_comandos "}" // I78
+    }
+
+I77: ESTADO DE REDUÇÃO -> opcional_else ::= ε •
+    goto(I74, ε) {
+        opcional_else ::= ε •
+    }
+
+I78: "{"
+    goto(I76, "{") {
+        opcional_else ::=  "CORRE" "{" • lista_comandos "}" // I79
+
+        lista_comandos ::= • comando lista_comandos // I2
+        lista_comandos ::= • comando                // I2
+
+        comando ::= • declaracao        // I4
+        comando ::= • atribuicao        // I5
+        comando ::= • entrada           // I6
+        comando ::= • saida             // I7
+        comando ::= • condicional       // I8
+        comando ::= • laco_repeticao    // I9 
+        comando ::= • break             // I10
+
+        declaracao ::= • ID "[" tipo "]" "#"                // I11
+        atribuicao ::= • ID "[" tipo "]" "VALE" valor "#"   // I11
+
+        entrada ::= • "RECEBE" "[" ID "]" "#"               // I28
+        saida   ::= • "MOSTRA" "[" lista_valores "]" "#"    // I33
+
+        condicional ::= • "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else  // I43
+
+        laco_repeticao ::= • laco_while // I81
+        laco_repeticao ::= • laco_for   // I82
+
+        laco_while ::= • "SEGUE" "(" expr ")" "{" lista_comandos "}"    // I83
+        laco_for   ::= • "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I90
+
+        break ::= • "CORTA" "#" // I104
+    }
+
+I79: lista_comandos
+    goto(I78, lista_comandos) {
+        opcional_else ::=  "CORRE" "{" lista_comandos • "}" // I80
+    }
+
+I80: ESTADO DE REDUÇÃO -> opcional_else ::=  "CORRE" "{" lista_comandos "}" • 
+    goto(I79, "}") {
+        opcional_else ::=  "CORRE" "{" lista_comandos "}" •
+    }
+
+-------------
+laco_while
+-------------
+I81: ESTADO DE REDUÇÃO -> laco_repeticao ::= laco_while • 
+    goto(I2, laco_while) {
+        laco_repeticao ::= laco_while •
+    }
+
+-------------
+laco_for
+-------------
+I82: ESTADO DE REDUÇÃO -> laco_repeticao ::= laco_for • 
+    goto(I2, laco_for) {
+        laco_repeticao ::= laco_for •
+    }
+
+-------------
+laco_while
+-------------
+I83: "SEGUE"
+    goto(I2, "SEGUE") {
+        laco_while ::= "SEGUE" • "(" expr ")" "{" lista_comandos "}"    // I84
+    }
+
+I84: "("
+    goto(I83, "(") {
+        laco_while ::= "SEGUE" "(" • expr ")" "{" lista_comandos "}"    // I85
+
+        expr ::= • term expr_tail   // I45
+
+        term ::= • "XX" term    // I46      
+        term ::= • "(" expr ")" // I47    
+        term ::= • valor        // I48
+
+        valor ::= • NUM_INT     // I22
+        valor ::= • NUM_REAL    // I23
+        valor ::= • STRING      // I24
+        valor ::= • BOOLEAN     // I25
+        valor ::= • ID          // I26
+
+    }
+
+I85: expr
+    goto(I84, expr) {
+        laco_while ::= "SEGUE" "(" expr • ")" "{" lista_comandos "}"    // I86
+    }
+
+I86: ")"
+    goto(I85, ")") {
+        laco_while ::= "SEGUE" "(" expr ")" • "{" lista_comandos "}"    // I87
+    }
+
+I87: "{"
+    goto(I86, "{") {
+        laco_while ::= "SEGUE" "(" expr ")" "{" • lista_comandos "}"    // I88
+
+        lista_comandos ::= • comando lista_comandos // I2
+        lista_comandos ::= • comando                // I2
+
+        comando ::= • declaracao        // I4
+        comando ::= • atribuicao        // I5
+        comando ::= • entrada           // I6
+        comando ::= • saida             // I7
+        comando ::= • condicional       // I8
+        comando ::= • laco_repeticao    // I9 
+        comando ::= • break             // I10
+
+        declaracao ::= • ID "[" tipo "]" "#"                // I11
+        atribuicao ::= • ID "[" tipo "]" "VALE" valor "#"   // I11
+
+        entrada ::= • "RECEBE" "[" ID "]" "#"               // I28
+        saida   ::= • "MOSTRA" "[" lista_valores "]" "#"    // I33
+
+        condicional ::= • "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else  // I43
+
+        laco_repeticao ::= • laco_while // I81
+        laco_repeticao ::= • laco_for   // I82
+
+        laco_while ::= • "SEGUE" "(" expr ")" "{" lista_comandos "}"    // I83
+        laco_for   ::= • "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I90
+
+        break ::= • "CORTA" "#" // I104
+    }
+
+I88: lista_comandos
+    goto(I87, lista_comandos) {
+        laco_while ::= "SEGUE" "(" expr ")" "{" lista_comandos • "}"    // I89
+    }
+
+I89: ESTADO DE REDUÇÃO -> laco_while ::= "SEGUE" "(" expr ")" "{" lista_comandos "}" •
+    goto(I88, "}") {
+        laco_while ::= "SEGUE" "(" expr ")" "{" lista_comandos "}" •
+    }
+
+-------------
+laco_for
+-------------
+I90: "DISTRIBUI"
+    goto(I2, "DISTRIBUI") {
+        laco_for ::= "DISTRIBUI" • ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I91
+    }
+
+I91: ID
+    goto(I90, ID) {
+        laco_for ::= "DISTRIBUI" ID • "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I92
+    }
+
+I92: "DE"
+    goto(I91, "DE") {
+        laco_for ::= "DISTRIBUI" ID "DE" • valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"    // I96
+        valor_for ::= • NUM_INT     // I93
+        valor_for ::= • NUM_REAL    // I94
+        valor_for ::= • ID          // I95
+    }
+
+I93: ESTADO DE REDUÇÃO -> valor_for ::= NUM_INT •
+    goto(I92, NUM_INT) {
+        valor_for ::= NUM_INT •
+    }
+
+I94: ESTADO DE REDUÇÃO -> valor_for ::= NUM_REAL •
+    goto(I92, NUM_REAL) {
+        valor_for ::= NUM_REAL •
+    }
+
+I95: ESTADO DE REDUÇÃO -> valor_for ::= ID •
+    goto(I92, ID) {
+        valor_for ::= ID •
+    }
+
+I96: valor_for
+    goto(I92, valor_for) {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for • "ATE" expr "PASSO" valor_for "{" lista_comandos "}"    // I97
+    }
+
+I97: "ATE"
+    goto(I96, "ATE") {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" • expr "PASSO" valor_for "{" lista_comandos "}"    // I98 
+
+        expr ::= • term expr_tail   // I45
+
+        term ::= • "XX" term    // I46      
+        term ::= • "(" expr ")" // I47    
+        term ::= • valor        // I48
+
+        valor ::= • NUM_INT     // I22
+        valor ::= • NUM_REAL    // I23
+        valor ::= • STRING      // I24
+        valor ::= • BOOLEAN     // I25
+        valor ::= • ID          // I26
+    }
+
+I98: expr
+    goto(I97, expr) {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr • "PASSO" valor_for "{" lista_comandos "}"    // I99
+    }
+
+I99: "PASSO"
+    goto(I98, "PASSO") {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" • valor_for "{" lista_comandos "}"    // I100
+        valor_for ::= • NUM_INT     // I93
+        valor_for ::= • NUM_REAL    // I94
+        valor_for ::= • ID          // I95 
+    }
+
+I100: valor_for
+    goto(i99, valor_for) {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for • "{" lista_comandos "}" // I101
+    }
+
+I101: "{"
+    goto(I100, "{") {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" • lista_comandos "}"    // I102
+
+        lista_comandos ::= • comando lista_comandos // I2
+        lista_comandos ::= • comando                // I2
+
+        comando ::= • declaracao        // I4
+        comando ::= • atribuicao        // I5
+        comando ::= • entrada           // I6
+        comando ::= • saida             // I7
+        comando ::= • condicional       // I8
+        comando ::= • laco_repeticao    // I9 
+        comando ::= • break             // I10
+
+        declaracao ::= • ID "[" tipo "]" "#"                // I11
+        atribuicao ::= • ID "[" tipo "]" "VALE" valor "#"   // I11
+
+        entrada ::= • "RECEBE" "[" ID "]" "#"               // I28
+        saida   ::= • "MOSTRA" "[" lista_valores "]" "#"    // I33
+
+        condicional ::= • "TRUCO" "(" expr ")" "{" lista_comandos "}" opcional_else  // I43
+
+        laco_repeticao ::= • laco_while // I81
+        laco_repeticao ::= • laco_for   // I82
+
+        laco_while ::= • "SEGUE" "(" expr ")" "{" lista_comandos "}"    // I83
+        laco_for   ::= • "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}"  // I90
+
+        break ::= • "CORTA" "#" // I104
+    }
+
+I102: lista_comandos
+    goto(I101, lista_comandos) {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos • "}"    // I103
+    }
+
+I103: ESTADO DE REDUÇÃO -> laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}" •
+    goto(I102, "}") {
+        laco_for ::= "DISTRIBUI" ID "DE" valor_for "ATE" expr "PASSO" valor_for "{" lista_comandos "}" •
+    }
+
+---------
+break
+---------
+I104: "CORTA"
+    goto(I2, "CORTA") {
+        break ::= "CORTA" • "#" // I105  
+    }
+
+I105: ESTADO DE REDUÇÃO -> break ::= "CORTA" "#" • 
+    goto(I104, "#") {
+        break ::= "CORTA" "#" •  
+    }
