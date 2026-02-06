@@ -149,7 +149,7 @@ A análise semântica e a geração de TAC exibem também a trajetória das etap
 ---
 
 
-## 🚀 Como Executar
+##  Como Executar
 
 1. Clone o repositório:
 
@@ -163,7 +163,7 @@ Não é necessário servidor backend.
 
 ---
 
-## 👨‍🎓 Contexto Acadêmico
+##  Contexto Acadêmico
 
 Projeto desenvolvido para fins acadêmicos como parte da disciplina de **Compiladores**, aplicando:
 
@@ -174,7 +174,7 @@ Projeto desenvolvido para fins acadêmicos como parte da disciplina de **Compila
 
 ---
 
-## 👤 Autores
+##  Autores
 
 - Pedro Henrique de Oliveira Berti
 - Luiz Eduardo Garzon de Oliveira
